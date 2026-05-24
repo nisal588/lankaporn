@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidShare - Public Video Sharing</title>
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --card-bg: #1f1f1f;
+            --accent-color: #ff0000;
+            --text-color: #ffffff;
+            --text-secondary: #aaa;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .upload-section {
+            background-color: var(--card-bg);
+            border: 2px dashed #444;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            transition: border-color 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: var(--accent-color);
+        }
+
+        .upload-btn {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        #videoInput {
+            display: none;
+        }
+
+        .progress-container {
+            margin-top: 1.5rem;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 8px;
+            width: 0%;
+            background-color: var(--accent-color);
+            transition: width 0.2s;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .video-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .video-card video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #000;
+        }
+
+        .video-info {
+            padding: 1rem;
+        }
+
+        .video-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .video-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>VidShare</h1>
+        <div>Public Feed</div>
+    </header>
+
+    <main>
+        <!-- Upload Zone -->
+        <section class="upload-section">
+            <h2>Upload a Video to the Public Feed</h2>
+            <p>Supports MP4, WebM (Max 50MB for demo)</p>
+            <label for="videoInput" class="upload-btn">Select Video File</label>
+            <input type="file" id="videoInput" accept="video/*">
+            
+            <div class="progress-container" id="progressContainer">
+                <p id="uploadStatus">Uploading...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Public Video Feed -->
+        <h2>Recent Uploads</h2>
+        <section class="video-grid" id="videoGrid">
+            <!-- Sample Video Card -->
+            <div class="video-card">
+                <video controls src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"></video>
+                <div class="video-info">
+                    <h3 class="video-title">Sample Public Video</h3>
+                    <div class="video-meta">Uploaded just now • 0 views</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const videoGrid = document.getElementById('videoGrid');
+
+        videoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Show UI progress elements
+            progressContainer.style.display = 'block';
+            uploadStatus.textContent = `Reading: ${file.name}`;
+
+            // Simulate UI Upload Progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    uploadStatus.textContent = "Upload complete! (Local simulation)";
+                    
+                    // Create a local URL to preview the uploaded file instantly in the feed
+                    const videoURL = URL.createObjectURL(file);
+                    addVideoToFeed(file.name, videoURL);
+                    
+                    // Reset input after a brief delay
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        progressFill.style.width = '0%';
+                    }, 2000);
+                }
+            }, 200);
+        });
+
+        function addVideoToFeed(title, src) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <video controls src="${src}"></video>
+                <div class="video-info">
+                    <h3 class="video-title">${title}</h3>
+                    <div class="video-meta">Uploaded just now • 0 views</div>
+                </div>
+            `;
+            // Insert new video at the top of the grid
+            videoGrid.insertBefore(card, videoGrid.firstChild);
+        }
+    </script>
+</body>
+</html>
